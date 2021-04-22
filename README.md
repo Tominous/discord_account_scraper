@@ -8,7 +8,7 @@ Scrapes
 ✔️ `Blocked Users` |
 ✔️ `Applications` |
 ✔️ `Current User` |
-✔️ `Guilds` |
+✔️ `Guilds (Attempts to create invite)` |
 ✔️ `Payment Info [Credit/Paypal]` |
 ✔️ `Messages with every open DM` |
 ✔️ `^ Includes every image/video sent within DM` |
